@@ -1,7 +1,10 @@
+import { Key, Keyboard } from "./keyboard";
 import "./style.css";
+import { Vec2 } from "./vec2";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#canvas")!;
 const ctx = canvas.getContext("2d")!;
+const input = new Keyboard(window);
 
 const HEIGHT = canvas.height;
 const WIDTH = canvas.width;
@@ -9,14 +12,9 @@ const WIDTH = canvas.width;
 const FIXED_DELTA_TIME = 1000 / 120;
 
 const player = {
-  pos: {
-    x: 100,
-    y: 100,
-  },
-  vel: {
-    x: 0.33,
-    y: 0,
-  },
+  angle: 0,
+  pos: new Vec2(100, 100),
+  vel: new Vec2(0.33, 0),
 };
 
 function drawPlayer() {
@@ -24,10 +22,10 @@ function drawPlayer() {
   const width = 10;
 
   const vertices = [
-    { x: height, y: 0 },
-    { x: -height, y: -width },
-    { x: -height, y: width },
-  ];
+    new Vec2(height, 0),
+    new Vec2(-height, -width),
+    new Vec2(-height, width),
+  ].map((v) => v.rotate(player.angle));
 
   ctx.save();
   ctx.strokeStyle = "white";
@@ -48,6 +46,12 @@ function clearScreen() {
 }
 
 function update(dt: number) {
+  if (input.isKeyDown(Key.ArrowLeft)) {
+    player.angle--;
+  }
+  if (input.isKeyDown(Key.ArrowRight)) {
+    player.angle++;
+  }
   player.pos.x += player.vel.x * dt;
   player.pos.y += player.vel.y * dt;
   player.pos.x %= WIDTH;
