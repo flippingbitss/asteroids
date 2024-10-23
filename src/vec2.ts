@@ -4,6 +4,10 @@ export class Vec2 {
     public y: number,
   ) {}
 
+  static get zero() {
+    return new Vec2(0, 0);
+  }
+
   rotate(angle: number): Vec2 {
     const angleInRadians = (angle * Math.PI) / 180;
     const sinTheta = Math.sin(angleInRadians);
@@ -13,6 +17,10 @@ export class Vec2 {
     const ny = this.x * sinTheta + this.y * cosTheta;
 
     return new Vec2(nx, ny);
+  }
+
+  add(operand: Vec2): Vec2 {
+    return new Vec2(this.x + operand.x, this.y + operand.y);
   }
 
   scale(factor: number): Vec2 {
