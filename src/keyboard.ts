@@ -2,6 +2,7 @@ export enum Key {
   ArrowLeft = "ArrowLeft",
   ArrowRight = "ArrowRight",
   Space = "Space",
+  ShiftLeft = "ShiftLeft",
 }
 
 export class Keyboard {

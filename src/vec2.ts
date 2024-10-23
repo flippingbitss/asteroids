@@ -14,4 +14,12 @@ export class Vec2 {
 
     return new Vec2(nx, ny);
   }
+
+  scale(factor: number): Vec2 {
+    return new Vec2(this.x * factor, this.y * factor);
+  }
+
+  magnitude(): number {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
 }
