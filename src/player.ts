@@ -1,19 +1,29 @@
 import { drawShape } from "./draw";
+import { EntityCollection } from "./entities";
+import { Entity } from "./entity";
 import { Key, Keyboard } from "./keyboard";
 import { applyBasicMovement } from "./movement";
+import { Cannon } from "./shooting";
 import { Vec2 } from "./vec2";
 
-const PLAYER_THRUST = 0.04;
-const PLAYER_MAX_SPEED = 0.4;
-const PLAYER_DRAG = 0.015;
-const PLAYER_FLAME_PULSE_INTERVAL = 100;
-const PLAYER_ROTATION_DELTA = 0.3;
+const SHIP_THRUST = 0.04;
+const SHIP_MAX_SPEED = 0.4;
+const SHIP_DRAG = 0.015;
+const SHIP_FLAME_PULSE_INTERVAL = 100;
+const SHIP_ROTATION_DELTA = 0.3;
 
-export class Ship {
+const SHIP_HEIGHT = 15;
+const SHIP_WIDTH = 10;
+
+export class Ship implements Entity {
+  name = "ship";
   angle: number;
   thrust: number;
   lastPulseTime: number;
   pulse: boolean;
+
+  cannon: Cannon;
+
   constructor(
     public pos: Vec2,
     public vel: Vec2,
@@ -23,6 +33,8 @@ export class Ship {
     this.thrust = 0;
     this.lastPulseTime = 0;
     this.pulse = false;
+
+    this.cannon = new Cannon(this);
   }
 
   dir(): Vec2 {
@@ -32,44 +44,50 @@ export class Ship {
     return new Vec2(x, y);
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
-    const height = 15;
-    const width = 10;
+  get spawnLocation(): Vec2 {
+    return this.pos.add(this.dir().scale(SHIP_HEIGHT / 2 + 10));
+  }
 
+  draw(ctx: CanvasRenderingContext2D) {
     const vertices = [
-      new Vec2(height, 0),
-      new Vec2(-height, -width),
-      new Vec2(-height + width / 3, -width / 2),
-      new Vec2(-height + width / 3, +width / 2),
-      new Vec2(-height, width),
+      new Vec2(SHIP_HEIGHT, 0),
+      new Vec2(-SHIP_HEIGHT, -SHIP_WIDTH),
+      new Vec2(-SHIP_HEIGHT + SHIP_WIDTH / 3, -SHIP_WIDTH / 2),
+      new Vec2(-SHIP_HEIGHT + SHIP_WIDTH / 3, +SHIP_WIDTH / 2),
+      new Vec2(-SHIP_HEIGHT, SHIP_WIDTH),
     ].map((v) => v.rotate(this.angle));
 
     drawShape(ctx, this.pos, vertices);
 
     if (this.thrust > 0 && this.pulse) {
       const flameVertices = [
-        new Vec2(-height + width / 4, -width / 3),
-        new Vec2(-height - width / 4, 0),
-        new Vec2(-height + width / 4, +width / 3),
+        new Vec2(-SHIP_HEIGHT + SHIP_WIDTH / 4, -SHIP_WIDTH / 3),
+        new Vec2(-SHIP_HEIGHT - SHIP_WIDTH / 4, 0),
+        new Vec2(-SHIP_HEIGHT + SHIP_WIDTH / 4, +SHIP_WIDTH / 3),
       ].map((v) => v.rotate(this.angle));
 
       drawShape(ctx, this.pos, flameVertices);
     }
   }
 
-  update(dt: number, now: number) {
+  update(dt: number, now: number, entities: EntityCollection) {
     this.thrust = 0;
     if (this.input.isKeyDown(Key.ArrowLeft)) {
-      this.angle += PLAYER_ROTATION_DELTA * dt;
+      this.angle -= SHIP_ROTATION_DELTA * dt;
     }
     if (this.input.isKeyDown(Key.ArrowRight)) {
-      this.angle -= PLAYER_ROTATION_DELTA * dt;
+      this.angle += SHIP_ROTATION_DELTA * dt;
     }
     if (this.input.isKeyDown(Key.ShiftLeft)) {
-      this.thrust = PLAYER_THRUST;
+      this.thrust = SHIP_THRUST;
+    }
+    if (this.input.isKeyDown(Key.Space)) {
+      console.log("key down space");
+      this.cannon.shoot(this.spawnLocation, this.dir());
     }
 
-    if (now - this.lastPulseTime > PLAYER_FLAME_PULSE_INTERVAL) {
+    this.cannon.update(dt, now, entities);
+    if (now - this.lastPulseTime > SHIP_FLAME_PULSE_INTERVAL) {
       this.pulse = !this.pulse;
       this.lastPulseTime = now;
     }
@@ -86,12 +104,12 @@ export class Ship {
 
     const speed = this.vel.magnitude();
     // cap max speed
-    if (speed > PLAYER_MAX_SPEED) {
-      this.vel = this.vel.scale(PLAYER_MAX_SPEED / speed);
+    if (speed > SHIP_MAX_SPEED) {
+      this.vel = this.vel.scale(SHIP_MAX_SPEED / speed);
     }
 
     // apply drag
-    this.vel = this.vel.scale(1 - PLAYER_DRAG);
+    this.vel = this.vel.scale(1 - SHIP_DRAG);
 
     // TODO: remove the any type
     applyBasicMovement(this as any, dt, { wrap: true });

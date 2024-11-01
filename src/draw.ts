@@ -29,3 +29,26 @@ export function drawShape(
   ctx.stroke();
   ctx.restore();
 }
+
+export function fillCircle(
+  ctx: CanvasRenderingContext2D,
+  pos: Vec2,
+  radius: number,
+) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+export function fillRect(
+  ctx: CanvasRenderingContext2D,
+  pos: Vec2,
+  w: number,
+  h: number,
+) {
+  ctx.save();
+  ctx.fillRect(pos.x, pos.y, w, h);
+  ctx.restore();
+}

@@ -1,7 +1,5 @@
+import { Entity } from "./entity";
 import { WIDTH, HEIGHT } from "./view";
-
-// TODO: Entity to a base class for player, asteroids, bullets
-type Entity = any;
 
 export function applyBasicMovement(
   entity: Entity,

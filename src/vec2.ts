@@ -30,4 +30,8 @@ export class Vec2 {
   magnitude(): number {
     return Math.sqrt(this.x * this.x + this.y * this.y);
   }
+
+  copy() {
+    return new Vec2(this.x, this.y);
+  }
 }

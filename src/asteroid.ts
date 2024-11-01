@@ -1,4 +1,6 @@
 import { Color, drawShape } from "./draw";
+import { EntityCollection } from "./entities";
+import { Entity } from "./entity";
 import { applyBasicMovement } from "./movement";
 import { Vec2 } from "./vec2";
 
@@ -54,7 +56,8 @@ const ASTEROID_SHAPES = [
   ],
 ];
 
-export class Asteroid {
+export class Asteroid implements Entity {
+  name = "asteroid";
   vertices: Array<Vec2>;
 
   constructor(
@@ -69,7 +72,7 @@ export class Asteroid {
     );
   }
 
-  update(dt: number, _now: number) {
+  update(dt: number, _now: number, _entities: EntityCollection) {
     applyBasicMovement(this, dt, { wrap: true });
   }
 
