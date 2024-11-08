@@ -52,3 +52,23 @@ export function fillRect(
   ctx.fillRect(pos.x, pos.y, w, h);
   ctx.restore();
 }
+
+export function drawDebugGrid(
+  ctx: CanvasRenderingContext2D,
+  pos: Vec2,
+  size: number,
+  predicate: (point: Vec2) => boolean,
+) {
+  for (let x = -size; x < size; x += 5) {
+    for (let y = -size; y < size; y += 5) {
+      const offset = new Vec2(x, y);
+      const pointPos = pos.add(offset);
+      if (predicate(pointPos)) {
+        ctx.fillStyle = "green";
+      } else {
+        ctx.fillStyle = "red";
+      }
+      ctx.fillRect(pointPos.x, pointPos.y, 2, 2);
+    }
+  }
+}

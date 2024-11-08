@@ -1,3 +1,4 @@
+import { Collider, ColliderType, Polygon } from "./collider";
 import { Color, drawShape } from "./draw";
 import { EntityCollection } from "./entities";
 import { Entity } from "./entity";
@@ -7,7 +8,8 @@ import { Vec2 } from "./vec2";
 export enum AsteroidSize {
   Small = 2,
   Medium = 5,
-  Large = 8,
+  // Large = 8,
+  Large = 25,
 }
 
 const ASTEROID_SHAPES = [
@@ -70,6 +72,13 @@ export class Asteroid implements Entity {
     this.vertices = ASTEROID_SHAPES[this.shapeId].map(([x, y]) =>
       new Vec2(x, y).scale(this.size),
     );
+  }
+
+  collider(): Collider {
+    return {
+      type: ColliderType.Polygon,
+      polygon: new Polygon(this.pos, this.vertices),
+    };
   }
 
   update(dt: number, _now: number, _entities: EntityCollection) {

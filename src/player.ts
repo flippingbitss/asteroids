@@ -1,3 +1,4 @@
+import { Collider, ColliderType, Polygon } from "./collider";
 import { drawShape } from "./draw";
 import { EntityCollection } from "./entities";
 import { Entity } from "./entity";
@@ -14,6 +15,14 @@ const SHIP_ROTATION_DELTA = 0.3;
 
 const SHIP_HEIGHT = 15;
 const SHIP_WIDTH = 10;
+
+const SHIP_GEOMETRY = [
+  new Vec2(SHIP_HEIGHT, 0),
+  new Vec2(-SHIP_HEIGHT, -SHIP_WIDTH),
+  new Vec2(-SHIP_HEIGHT + SHIP_WIDTH / 3, -SHIP_WIDTH / 2),
+  new Vec2(-SHIP_HEIGHT + SHIP_WIDTH / 3, +SHIP_WIDTH / 2),
+  new Vec2(-SHIP_HEIGHT, SHIP_WIDTH),
+];
 
 export class Ship implements Entity {
   name = "ship";
@@ -35,6 +44,9 @@ export class Ship implements Entity {
     this.pulse = false;
 
     this.cannon = new Cannon(this);
+    this.input.onKeyDownOnce(Key.Space, () =>
+      this.cannon.shoot(this.spawnLocation, this.dir()),
+    );
   }
 
   dir(): Vec2 {
@@ -48,14 +60,15 @@ export class Ship implements Entity {
     return this.pos.add(this.dir().scale(SHIP_HEIGHT / 2 + 10));
   }
 
+  collider(): Collider {
+    return {
+      type: ColliderType.Polygon,
+      polygon: new Polygon(this.pos, SHIP_GEOMETRY),
+    };
+  }
+
   draw(ctx: CanvasRenderingContext2D) {
-    const vertices = [
-      new Vec2(SHIP_HEIGHT, 0),
-      new Vec2(-SHIP_HEIGHT, -SHIP_WIDTH),
-      new Vec2(-SHIP_HEIGHT + SHIP_WIDTH / 3, -SHIP_WIDTH / 2),
-      new Vec2(-SHIP_HEIGHT + SHIP_WIDTH / 3, +SHIP_WIDTH / 2),
-      new Vec2(-SHIP_HEIGHT, SHIP_WIDTH),
-    ].map((v) => v.rotate(this.angle));
+    const vertices = SHIP_GEOMETRY.map((v) => v.rotate(this.angle));
 
     drawShape(ctx, this.pos, vertices);
 
@@ -80,10 +93,6 @@ export class Ship implements Entity {
     }
     if (this.input.isKeyDown(Key.ShiftLeft)) {
       this.thrust = SHIP_THRUST;
-    }
-    if (this.input.isKeyDown(Key.Space)) {
-      console.log("key down space");
-      this.cannon.shoot(this.spawnLocation, this.dir());
     }
 
     this.cannon.update(dt, now, entities);

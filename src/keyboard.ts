@@ -5,13 +5,17 @@ export enum Key {
   ShiftLeft = "ShiftLeft",
 }
 
+type Listener = () => void;
+
 export class Keyboard {
   private static reservedKeys = new Set(Object.values(Key));
 
   private downKeys: Set<Key>;
+  private downKeyOnceListeners: Map<Key, Listener>;
 
   constructor(window: Window) {
     this.downKeys = new Set();
+    this.downKeyOnceListeners = new Map();
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
     window.addEventListener("keydown", this.handleKeyPress);
@@ -28,6 +32,9 @@ export class Keyboard {
 
     if (e.type === "keydown") {
       this.downKeys.add(key);
+      if (!e.repeat) {
+        this.downKeyOnceListeners.get(key)?.();
+      }
     } else if (e.type === "keyup") {
       this.downKeys.delete(key);
     }
@@ -35,5 +42,9 @@ export class Keyboard {
 
   public isKeyDown(key: Key): boolean {
     return this.downKeys.has(key);
+  }
+
+  public onKeyDownOnce(key: Key, listener: Listener) {
+    this.downKeyOnceListeners.set(key, listener);
   }
 }

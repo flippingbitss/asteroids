@@ -1,3 +1,4 @@
+import { Collider, ColliderType } from "./collider";
 import { Color, fillCircle } from "./draw";
 import { EntityCollection } from "./entities";
 import { Entity } from "./entity";
@@ -16,6 +17,13 @@ export class Bullet implements Entity {
     public vel: Vec2,
   ) {
     this.dist = 0;
+  }
+
+  collider(): Collider {
+    return {
+      type: ColliderType.Point,
+      pos: this.pos.copy(),
+    };
   }
 
   update(dt: number, _now: number, entities: EntityCollection) {
