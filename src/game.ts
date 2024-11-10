@@ -1,13 +1,12 @@
-import { Asteroid, AsteroidSize, hitAsteroid } from "./asteroid";
-import { Bullet } from "./bullet";
+import { Asteroid, hitAsteroid } from "./asteroid";
 import { checkCollisions, CollisionType } from "./collision";
 import { clearScreen } from "./draw";
 import { EntityCollection } from "./entities";
+import { spawnExplosion } from "./explosion";
 import { Keyboard } from "./keyboard";
 import { Ship } from "./player";
 import { Ticker } from "./ticker";
 import { Vec2 } from "./vec2";
-import { CENTER } from "./view";
 
 const FIXED_DELTA_TIME = 1000 / 120;
 
@@ -29,6 +28,12 @@ export class Game {
 
     const asteroid = new Asteroid(new Vec2(200, 200), new Vec2(0.1, 0.1), 2, 2);
     this.entities.asteroids.push(asteroid);
+
+    window.addEventListener("click", (e) => {
+      const point = new Vec2(e.offsetX, e.offsetY);
+      const explosion = spawnExplosion(point, performance.now());
+      this.entities.explosions.push(explosion);
+    });
   }
 
   handleCollisions() {
@@ -39,6 +44,9 @@ export class Game {
       if (collision.type === CollisionType.BulletAsteroid) {
         const { bullet, asteroid } = collision;
         this.entities.remove(bullet);
+        this.entities.explosions.push(
+          spawnExplosion(asteroid.pos.copy(), performance.now()),
+        );
         hitAsteroid(asteroid, this.entities);
       }
     }

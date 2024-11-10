@@ -3,7 +3,7 @@ import { EntityCollection } from "./entities";
 import { Entity } from "./entity";
 import { Vec2 } from "./vec2";
 
-const BULLET_SPEED = 0.3;
+const BULLET_SPEED = 0.5;
 const BULLET_FIRE_RATE_IN_MS = 500;
 
 export class Cannon {
