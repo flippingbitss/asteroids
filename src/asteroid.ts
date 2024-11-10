@@ -6,11 +6,12 @@ import { applyBasicMovement } from "./movement";
 import { Vec2 } from "./vec2";
 
 export enum AsteroidSize {
-  Small = 2,
-  Medium = 5,
-  // Large = 8,
-  Large = 25,
+  Small = 0,
+  Medium = 1,
+  Large = 2,
 }
+
+const SIZES = [2, 5, 8];
 
 const ASTEROID_SHAPES = [
   // [x, y]
@@ -58,6 +59,21 @@ const ASTEROID_SHAPES = [
   ],
 ];
 
+export function hitAsteroid(asteroid: Asteroid, entities: EntityCollection) {
+  if (asteroid.life < 0) {
+    entities.remove(asteroid);
+  }
+  asteroid.life--;
+  asteroid.updateGeometry();
+  const child = asteroid.clone();
+  const dx = Math.random() - 0.5;
+  const dy = Math.random() - 0.5;
+  const dir = new Vec2(dx, dy).normalize();
+  child.vel.x = child.vel.x * dir.x;
+  child.vel.y = child.vel.y * dir.y;
+  entities.asteroids.push(child);
+}
+
 export class Asteroid implements Entity {
   name = "asteroid";
   vertices: Array<Vec2>;
@@ -65,13 +81,22 @@ export class Asteroid implements Entity {
   constructor(
     public pos: Vec2,
     public vel: Vec2,
-    public size: AsteroidSize,
+    public life: number,
     public shapeId: number,
   ) {
     // construct a shape from pre-defined shapes
+    this.vertices = [];
+    this.updateGeometry();
+  }
+
+  updateGeometry() {
     this.vertices = ASTEROID_SHAPES[this.shapeId].map(([x, y]) =>
       new Vec2(x, y).scale(this.size),
     );
+  }
+
+  get size() {
+    return SIZES[this.life];
   }
 
   collider(): Collider {
@@ -88,5 +113,14 @@ export class Asteroid implements Entity {
   draw(ctx: CanvasRenderingContext2D) {
     ctx.strokeStyle = Color.Entities;
     drawShape(ctx, this.pos, this.vertices);
+  }
+
+  clone() {
+    return new Asteroid(
+      this.pos.copy(),
+      this.vel.copy(),
+      this.life,
+      this.shapeId,
+    );
   }
 }

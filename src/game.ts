@@ -1,8 +1,7 @@
-import { Asteroid, AsteroidSize } from "./asteroid";
+import { Asteroid, AsteroidSize, hitAsteroid } from "./asteroid";
 import { Bullet } from "./bullet";
-import { PolygonCollider } from "./collider";
-import { pointInsidePolygon } from "./collision";
-import { clearScreen, drawDebugGrid } from "./draw";
+import { checkCollisions, CollisionType } from "./collision";
+import { clearScreen } from "./draw";
 import { EntityCollection } from "./entities";
 import { Keyboard } from "./keyboard";
 import { Ship } from "./player";
@@ -13,14 +12,9 @@ import { CENTER } from "./view";
 const FIXED_DELTA_TIME = 1000 / 120;
 
 export class Game {
-  // ship
-  // bullets, asteroids, behaviors
-
   private entities: EntityCollection;
 
   private ticker: Ticker;
-
-  polygonCollider: PolygonCollider;
 
   constructor(
     private ctx: CanvasRenderingContext2D,
@@ -33,19 +27,21 @@ export class Game {
     this.ticker.onFixedUpdate(this.update.bind(this));
     this.ticker.onRender(this.draw.bind(this, this.ctx));
 
-    this.entities.bullets.push(new Bullet(new Vec2(200, 200), new Vec2(1, 0)));
-
-    const asteroid = new Asteroid(
-      CENTER,
-      // new Vec2(200, 200),
-      Vec2.zero,
-      // new Vec2(0.1, 0.1),
-      AsteroidSize.Large,
-      2,
-    );
+    const asteroid = new Asteroid(new Vec2(200, 200), new Vec2(0.1, 0.1), 2, 2);
     this.entities.asteroids.push(asteroid);
+  }
 
-    this.polygonCollider = asteroid.collider() as PolygonCollider;
+  handleCollisions() {
+    // check collisions across all collidable entities
+    // take action based on the collision
+    const collisions = checkCollisions(this.entities);
+    for (const collision of collisions) {
+      if (collision.type === CollisionType.BulletAsteroid) {
+        const { bullet, asteroid } = collision;
+        this.entities.remove(bullet);
+        hitAsteroid(asteroid, this.entities);
+      }
+    }
   }
 
   start() {
@@ -56,6 +52,8 @@ export class Game {
     for (const entity of this.entities.all()) {
       entity.update(dt, now, this.entities);
     }
+
+    this.handleCollisions();
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -63,9 +61,9 @@ export class Game {
     for (const entity of this.entities.all()) {
       entity.draw(ctx);
     }
-
-    drawDebugGrid(ctx, this.polygonCollider.polygon.pos, 150, (point) => {
-      return pointInsidePolygon(point, this.polygonCollider.polygon);
-    });
+    //
+    // drawDebugGrid(ctx, this.polygonCollider.polygon.pos, 150, (point) => {
+    //   return pointInsidePolygon(point, this.polygonCollider.polygon);
+    // });
   }
 }

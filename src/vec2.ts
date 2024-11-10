@@ -31,6 +31,11 @@ export class Vec2 {
     return Math.sqrt(this.x * this.x + this.y * this.y);
   }
 
+  normalize(): Vec2 {
+    const mag = this.magnitude();
+    return new Vec2(this.x / mag, this.y / mag);
+  }
+
   copy() {
     return new Vec2(this.x, this.y);
   }
